@@ -1,237 +1,185 @@
 # Commitar alterações pendentes
 
-Organize e faça commits das alterações pendentes do repositório de forma **coesa, incremental e semântica**.
+Esta skill serve exclusivamente para **organizar e criar commits locais**.
 
-## Escopo
+Não execute operações remotas.
 
-Esta skill é **exclusivamente para criação de commits locais**.
+## Operações permitidas
 
-O agent pode:
+Use normalmente comandos Git necessários para:
 
-* inspecionar o repositório;
-* ler diffs;
-* ler o histórico de commits;
+* inspecionar o estado local;
+* ler alterações;
+* consultar histórico local;
 * fazer staging;
-* criar commits locais;
-* validar os commits criados;
-* consultar o estado local do Git.
+* criar commits;
+* validar commits locais.
 
-O agent **NUNCA deve sincronizar o repositório com qualquer remoto**.
+Operações como `git status`, `git diff`, `git log`, `git add`, `git reset` e `git commit` são permitidas quando necessárias.
 
-### Comandos proibidos
+## Operações proibidas
 
-**Nunca execute**, direta ou indiretamente:
+Nunca execute:
 
-* `git push`;
-* `git pull`;
-* `git fetch`;
-* `git clone`;
-* `git remote`;
-* `git submodule update`;
-* `git subtree`;
-* qualquer comando que busque dados de um remoto;
+* `git push`
+* `git pull`
+* `git fetch`
+* `git clone`
+* `git remote`
+* operações de sincronização com remotos
 * qualquer comando que envie dados para um remoto;
-* qualquer operação cujo objetivo seja sincronizar o repositório local com um remoto.
+* qualquer comando que busque dados de um remoto.
 
-Não tente "atualizar antes de commitar", "garantir que está sincronizado", "buscar os commits mais recentes do remoto" ou realizar qualquer outra operação de sincronização.
-
-**O estado local do repositório é a única fonte de verdade para esta skill.**
-
-Se o usuário solicitar push, pull, fetch ou qualquer outra operação remota durante esta tarefa, **não execute a operação**. Informe que esta skill é limitada a commits locais.
+Esta skill trabalha somente com o estado **local** do repositório.
 
 ---
 
-## Regra crítica
+## Fluxo
 
-**NUNCA execute `git commit` sem antes apresentar ao usuário o plano de commits e receber aprovação explícita.**
+Siga esta ordem:
 
-O fluxo obrigatório é:
+1. analisar;
+2. propor os commits;
+3. pedir aprovação;
+4. executar os commits aprovados;
+5. validar o resultado.
 
-**INSPECIONAR → ANALISAR → AGRUPAR → PROPOR → AGUARDAR APROVAÇÃO → COMMITAR → VALIDAR**
+### 1. Analisar
 
----
+Primeiro, examine todas as alterações pendentes.
 
-## 1. Inspecionar o repositório
+Use:
 
-Antes de propor qualquer commit, faça uma leitura completa do estado atual:
+```bash
+git status
+git diff
+git diff --cached
+```
 
-* Execute `git status`.
-* Identifique arquivos:
+Considere:
 
-  * modificados;
-  * adicionados;
-  * removidos;
-  * renomeados;
-  * não rastreados.
-* Leia o **diff completo** das alterações pendentes.
-* Considere alterações staged e unstaged.
-* Leia arquivos relevantes quando o diff isoladamente não for suficiente para entender a alteração.
+* arquivos modificados;
+* arquivos novos;
+* arquivos removidos;
+* arquivos renomeados;
+* alterações staged;
+* alterações unstaged;
+* arquivos não rastreados.
 
-**Não faça commits nesta etapa.**
+Leia o diff completo antes de decidir como dividir os commits.
 
-O objetivo é compreender **100% das alterações pendentes** antes de agrupá-las.
+Quando necessário, leia os arquivos envolvidos para entender o contexto da alteração.
 
----
+### 2. Analisar o histórico
 
-## 2. Entender o padrão do projeto
+Leia os commits locais mais recentes para identificar o padrão do projeto.
 
-Leia os commits recentes **disponíveis localmente** para entender o padrão utilizado pelo repositório.
+Use, por exemplo:
 
-Analise especialmente:
+```bash
+git log -n 10 --oneline
+git log -n 10 --format=fuller
+```
 
-* idioma das mensagens;
-* Conventional Commits utilizado;
-* `type` mais frequente;
-* uso de `scope`;
+Observe:
+
+* idioma;
+* estilo;
+* `type`;
+* `scope`;
+* Conventional Commits;
 * capitalização;
-* nível de detalhamento;
-* vocabulário utilizado;
-* padrão de commits de `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, etc.
+* nível de detalhamento.
 
-Use o histórico local real do projeto como referência.
+Siga o padrão encontrado no próprio repositório.
 
-**Não execute `git fetch`, `git pull` ou qualquer outra operação para obter histórico remoto.**
+Não faça `fetch`, `pull` ou qualquer operação remota para obter histórico.
 
-**Não imponha um estilo diferente do já utilizado pelo repositório sem necessidade.**
+### 3. Dividir em commits
 
----
+Agrupe as alterações por **intenção lógica**.
 
-## 3. Separar as alterações em blocos
+Prefira commits:
 
-Agrupe as alterações por **intenção lógica**, não simplesmente por arquivo.
+* pequenos;
+* coesos;
+* fáceis de revisar;
+* com uma única responsabilidade;
+* independentes quando possível.
 
-Cada bloco deve representar uma mudança que faça sentido isoladamente.
+Evite colocar alterações não relacionadas no mesmo commit.
 
-### Prioridades
+Não agrupe alterações somente porque pertencem ao mesmo arquivo.
 
-Prefira:
+Se partes diferentes de um arquivo pertencem a commits diferentes, use staging seletivo.
 
-* commits pequenos;
-* commits coesos;
-* uma intenção por commit;
-* fácil revisão;
-* histórico fácil de entender;
-* baixo acoplamento entre commits.
+Se uma alteração depende de outra, organize os commits na ordem correta.
 
-Evite:
+Não crie commits artificiais apenas para reduzir o tamanho. Cada commit deve representar uma mudança real e coerente.
 
-* commits gigantes;
-* misturar funcionalidades diferentes;
-* misturar feature com refatoração não relacionada;
-* misturar correções independentes;
-* commits genéricos como `chore: update files`;
-* colocar tudo em um único commit apenas porque as alterações ocorreram juntas.
+### 4. Criar a proposta
 
-### Arquivos parcialmente relacionados
+Antes de criar qualquer commit, mostre ao usuário o plano.
 
-Se diferentes partes do mesmo arquivo pertencem a commits diferentes, faça **staging seletivo**.
-
-Não agrupe alterações apenas porque estão no mesmo arquivo.
-
-### Dependências entre alterações
-
-Se uma alteração depende de outra, mantenha a ordem lógica entre os commits.
-
-Exemplo:
+Para cada commit, informe:
 
 ```text
-refactor(auth): extract token validation
-feat(auth): add token refresh
-test(auth): cover token refresh
+1. type(scope): descrição
+   Arquivos:
+   - arquivo-a
+   - arquivo-b
+
+   Alteração:
+   breve descrição da mudança
 ```
 
-Quando duas alterações precisam obrigatoriamente estar juntas para manter o projeto funcional, elas podem pertencer ao mesmo commit.
+A proposta deve conter todos os commits que serão criados e explicar brevemente a separação.
 
----
+Depois pergunte:
 
-## 4. Propor os commits ao usuário
+**"Os commits propostos estão bons e posso executá-los?"**
 
-Depois de analisar tudo, **pare antes de executar qualquer commit**.
+Aguarde a resposta do usuário.
 
-Apresente ao usuário uma proposta objetiva contendo, para cada commit:
+Se o usuário pedir alterações, ajuste a proposta e peça aprovação novamente.
 
-* número;
-* mensagem completa do commit;
-* arquivos envolvidos;
-* resumo curto do que será incluído;
-* motivo pelo qual as alterações pertencem ao mesmo commit.
+**Somente após uma aprovação explícita execute os commits.**
 
-Exemplo:
+### 5. Executar os commits
 
-```text
-Proposta de commits:
+Após a aprovação, execute os commits exatamente conforme a proposta aprovada.
 
-1. refactor(auth): extract token validation
-   - src/auth/token.ts
-   - src/auth/middleware.ts
-   Motivo: extrai a validação de token sem alterar comportamento.
+Para cada commit:
 
-2. feat(auth): add token refresh
-   - src/auth/refresh.ts
-   - src/auth/token.ts
-   Motivo: adiciona suporte à renovação de tokens.
+1. faça staging somente das alterações daquele commit;
+2. confira o conteúdo staged;
+3. execute `git commit`;
+4. confirme o commit criado.
 
-3. test(auth): cover token refresh
-   - tests/auth/refresh.test.ts
-   Motivo: adiciona cobertura para o novo fluxo.
-```
+Quando houver alterações diferentes no mesmo arquivo, faça staging por partes.
 
-Em seguida, **pergunte explicitamente ao usuário**:
+Não inclua alterações que não façam parte do commit aprovado.
 
-> Esses commits estão bons e posso executá-los?
+### 6. Coautor
 
-### Regra de aprovação
-
-Aguarde uma resposta afirmativa clara do usuário antes de continuar.
-
-Exemplos de aprovação:
-
-* "sim";
-* "pode";
-* "pode executar";
-* "está bom";
-* "aprovado";
-* "manda ver".
-
-Se o usuário pedir alterações no agrupamento ou nas mensagens:
-
-1. ajuste a proposta;
-2. apresente novamente;
-3. peça aprovação novamente;
-4. somente então execute.
-
-**Nunca interprete silêncio, contexto anterior ou a própria análise como autorização para commitar.**
-
----
-
-## 5. Executar os commits aprovados
-
-Depois da aprovação:
-
-1. Faça o staging somente das alterações pertencentes ao primeiro bloco.
-2. Revise o conteúdo staged com `git diff --cached`.
-3. Crie o commit.
-4. Repita o processo para os blocos seguintes.
-
-Quando necessário, use staging parcial para separar alterações do mesmo arquivo.
-
-### Coautor obrigatório
-
-**Todos os commits devem possuir o seguinte coautor:**
+Todos os commits criados por esta skill devem incluir:
 
 ```text
 Co-authored-by: opencode <noreply@opencode.ai>
 ```
 
-Use esse trailer em todos os commits criados pelo agent.
+Exemplo:
 
----
+```bash
+git commit -m "feat(core): add request collector" \
+  --trailer "Co-authored-by: opencode <noreply@opencode.ai>"
+```
 
-## 6. Mensagens de commit
+Use a sintaxe de trailer suportada pelo Git para garantir que o coautor apareça corretamente no commit.
 
-Use **Conventional Commits / commits semânticos**.
+### 7. Mensagens
 
-Formato preferencial:
+Use Conventional Commits:
 
 ```text
 type(scope): description
@@ -239,79 +187,53 @@ type(scope): description
 
 Tipos comuns:
 
-* `feat`: nova funcionalidade;
-* `fix`: correção de bug;
-* `refactor`: alteração estrutural sem mudança de comportamento;
-* `test`: testes;
-* `docs`: documentação;
-* `chore`: manutenção;
-* `build`: build/dependências relacionadas ao sistema de build;
-* `ci`: CI/CD;
-* `perf`: melhoria de performance;
-* `style`: alterações puramente de estilo/formatação.
+* `feat`
+* `fix`
+* `refactor`
+* `test`
+* `docs`
+* `chore`
+* `build`
+* `ci`
+* `perf`
+* `style`
 
-Escolha o tipo com base na **intenção real da alteração** e no padrão observado nos commits recentes.
+Escolha o tipo de acordo com a intenção da alteração.
 
-Não invente `scope` quando o projeto não utiliza scopes ou quando eles não agregarem informação.
+Use `scope` quando isso for consistente com o padrão do projeto.
 
----
+A mensagem deve seguir o idioma e o estilo observados no histórico recente.
 
-## 7. Validar cada commit
+### 8. Validação
 
-Depois de criar cada commit:
+Depois de criar os commits:
 
-* confirme que o commit contém somente as alterações planejadas;
-* confira a mensagem;
-* confira o coautor;
-* verifique o diff do commit quando necessário.
+```bash
+git status
+git log -n <quantidade> --oneline
+```
 
-Depois de todos os commits:
+Confirme:
 
-* execute `git status`;
-* confirme quais alterações, se houver, continuam pendentes;
-* confirme que nenhuma alteração foi perdida, revertida ou incluída indevidamente.
+* quais commits foram criados;
+* que cada commit contém somente as alterações esperadas;
+* que o coautor está presente;
+* se existem alterações ainda não commitadas.
 
-**A validação deve permanecer estritamente local.**
+A validação deve ser exclusivamente local.
 
-Não execute `push`, `pull`, `fetch`, `remote` ou qualquer outra operação remota durante a validação.
+Não execute `push`, `pull`, `fetch` ou outras operações remotas.
 
-**Nunca descarte alterações do usuário para deixar o working tree limpo.**
+## Regra de aprovação
 
----
+A aprovação do usuário é necessária **somente antes da execução dos commits**.
 
-## 8. Resumo final
+Depois que o usuário aprovar a proposta, execute os commits aprovados normalmente.
 
-Ao terminar, informe:
+Não peça uma nova aprovação para cada commit individual, a menos que a proposta tenha sido alterada.
 
-* commits criados;
-* hash curto de cada commit;
-* mensagem de cada commit;
-* alterações que permaneceram pendentes, se houver;
-* estado final do repositório local.
+## Regra de escopo
 
-Não informe que as alterações foram "enviadas", "sincronizadas" ou "publicadas", pois esta skill **não realiza operações remotas**.
+Esta skill **não publica, sincroniza ou atualiza o repositório remoto**.
 
----
-
-## Checklist obrigatório
-
-Antes de executar qualquer commit, confirme internamente:
-
-* [ ] `git status` foi analisado;
-* [ ] todas as alterações pendentes foram lidas;
-* [ ] diff staged e unstaged foram considerados;
-* [ ] commits recentes foram analisados;
-* [ ] somente histórico local foi consultado;
-* [ ] padrão de linguagem foi identificado;
-* [ ] alterações foram divididas em blocos lógicos;
-* [ ] cada bloco é pequeno e coeso;
-* [ ] mensagens semânticas foram propostas;
-* [ ] proposta foi apresentada ao usuário;
-* [ ] usuário aprovou explicitamente os commits;
-* [ ] staging será feito de forma seletiva quando necessário;
-* [ ] coautor `opencode <noreply@opencode.ai>` será incluído em todos os commits;
-* [ ] nenhuma operação remota será executada.
-
-**Se a aprovação do usuário ainda não aconteceu, PARE. Não execute `git commit`.**
-
-**Se uma operação remota for necessária para prosseguir, PARE. Esta skill não executa operações remotas.**
+Seu objetivo termina após a criação e validação dos commits locais.
