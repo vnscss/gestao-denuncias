@@ -1,0 +1,21 @@
+services:
+  cache:
+    image: redis:7-alpine
+    container_name: cache
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - shared_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+networks:
+  shared_net:
+    external: true
+
+volumes:
+  redis_data:
