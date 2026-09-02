@@ -10,8 +10,8 @@ services:
     networks:
       - shared_net
     volumes:
-      - static_files:/app/staticfiles
-      - media_files:/app/media
+      - ${STATIC_FILES_DIR}:/app/staticfiles
+      - ${MEDIA_FILES_DIR}:/app/media
 
   nginx:
     build:
@@ -27,13 +27,9 @@ services:
     networks:
       - shared_net
     volumes:
-      - static_files:/app/staticfiles:ro
-      - media_files:/app/media:ro
+      - ${STATIC_FILES_DIR}:/app/staticfiles:ro
+      - ${MEDIA_FILES_DIR}:/app/media:ro
 
 networks:
   shared_net:
     external: true
-
-volumes:
-  static_files:
-  media_files:

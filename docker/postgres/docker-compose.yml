@@ -4,7 +4,7 @@ services:
     container_name: postgres
     restart: unless-stopped
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ${POSTGRES_DATA_DIR}:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
@@ -20,6 +20,3 @@ services:
 networks:
   shared_net:
     external: true
-
-volumes:
-  postgres_data:
