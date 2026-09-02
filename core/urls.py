@@ -16,7 +16,24 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from denuncia.views import *
+from gerencial.views import *
+from landingpage.views import * 
 
-urlpatterns = [
-    path('admin/', admin.site.urls),
+urlpatterns = []
+
+denuncia = [
+
 ]
+
+
+gerencial = [
+
+]
+
+
+landingpage = [
+
+]
+
+urlpatterns += denuncia , gerencial , landingpage
