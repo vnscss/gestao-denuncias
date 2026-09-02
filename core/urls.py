@@ -36,4 +36,4 @@ landingpage = [
 
 ]
 
-urlpatterns += denuncia , gerencial , landingpage
+urlpatterns += denuncia + gerencial + landingpage

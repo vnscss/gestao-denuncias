@@ -19,7 +19,6 @@ server {
     }
 
     location / {
-        include proxy_params;
         proxy_pass http://django;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -28,7 +27,6 @@ server {
     }
 
     location /admin/ {
-        include proxy_params;
         proxy_pass http://django;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
